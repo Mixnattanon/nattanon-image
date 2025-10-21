@@ -25,7 +25,7 @@ const RestoreImage: React.FC = () => {
     }
   };
   
-  const handleRestoreAndColorize = useCallback(async () => {
+  const handleColorize = useCallback(async () => {
     if (!originalImage) {
       setError('กรุณาอัปโหลดรูปภาพก่อน');
       return;
@@ -34,19 +34,19 @@ const RestoreImage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     
-    const comprehensivePrompt = `
-      ดำเนินการบูรณะและปรับปรุงภาพถ่ายขาวดำเก่านี้ให้สมบูรณ์แบบระดับมืออาชีพในขั้นตอนเดียว:
-      1.  **ซ่อมแซม:** ลบจุดบกพร่องทั้งหมดอย่างพิถีพิถัน เช่น รอยขีดข่วน, ฝุ่น, ความเสียหายจากน้ำ, และแสงสะท้อนหรือเงาที่ไม่เป็นธรรมชาติ
-      2.  **เพิ่มความคมชัด:** ยกระดับภาพให้มีความละเอียดสูง เพิ่มความคมชัดและความกระจ่างใสเพื่อให้ได้คุณภาพเทียบเท่าภาพถ่ายจากสตูดิโอมืออาชีพสมัยใหม่
-      3.  **เติมสี:** ใช้สีที่สมจริง, เป็นธรรมชาติ, และสดใส ตรวจสอบให้แน่ใจว่าความอิ่มตัวของสีมีความสมดุลอย่างเหมาะสม สไตล์สุดท้ายต้องเป็นแบบภาพถ่ายจริง (photorealistic) และห้ามใช้สไตล์ภาพสีน้ำ (watercolor) โดยเด็ดขาด
-      **ข้อกำหนดสำคัญ:** ต้องรักษารายละเอียด, องค์ประกอบ, และโดยเฉพาะอย่างยิ่งความคล้ายคลึงของบุคคลในภาพต้นฉบับไว้ 100% ห้ามเปลี่ยนแปลงลักษณะหน้าตาหรือองค์ประกอบของภาพถ่าย
+    const colorizePrompt = `
+      ลงสีภาพถ่ายขาวดำนี้ ใช้สีที่สมจริง, เป็นธรรมชาติ และสดใส
+      ตรวจสอบให้แน่ใจว่าความอิ่มตัวของสีมีความสมดุล สไตล์สุดท้ายต้องเป็นแบบภาพถ่ายจริง
+      ห้ามใช้สไตล์สีน้ำ สิ่งสำคัญคือต้องรักษารายละเอียด, องค์ประกอบ,
+      และโดยเฉพาะอย่างยิ่งความคล้ายคลึงของบุคคลในภาพถ่ายไว้ 100%
+      ห้ามเปลี่ยนแปลงลักษณะใบหน้าหรือองค์ประกอบของภาพถ่าย
     `;
 
     try {
       const base64Data = await fileToBase64(originalImage.file);
       const mimeType = originalImage.file.type;
       
-      const imageUrl = await editImage(base64Data, mimeType, comprehensivePrompt);
+      const imageUrl = await editImage(base64Data, mimeType, colorizePrompt);
       setProcessedImage(imageUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดที่ไม่รู้จัก');
@@ -59,7 +59,7 @@ const RestoreImage: React.FC = () => {
     if (!processedImage) return;
     const link = document.createElement('a');
     link.href = processedImage;
-    link.download = `gemini-restored-image.png`;
+    link.download = `ภาพที่ลงสี-gemini.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -99,17 +99,17 @@ const RestoreImage: React.FC = () => {
               <div className="w-full aspect-square bg-base-300 rounded-lg flex items-center justify-center relative overflow-hidden">
                 {isLoading && (
                   <div className="text-center animate-pulse-fast">
-                    <p className="text-text-secondary text-lg">AI กำลังทำงานอย่างหนัก...</p>
-                    <p className="text-sm text-gray-400 mt-2">โปรดรอสักครู่</p>
+                    <p className="text-text-secondary text-lg">AI กำลังทำงาน...</p>
+                    <p className="text-sm text-gray-400 mt-2">กรุณารอสักครู่</p>
                   </div>
                 )}
                 {!isLoading && processedImage && (
-                   <img src={processedImage} alt="Processed" className="rounded-lg shadow-lg w-full h-full object-contain" />
+                   <img src={processedImage} alt="Colorized" className="rounded-lg shadow-lg w-full h-full object-contain" />
                 )}
                 {!isLoading && !processedImage && (
                   <div className="text-text-secondary p-4 text-center">
-                    <p>ผลลัพธ์จากการแก้ไขจะแสดงที่นี่</p>
-                    <p className="text-sm mt-2">คลิกปุ่มด้านล่างเพื่อเริ่ม</p>
+                    <p>ผลลัพธ์การลงสีจะแสดงที่นี่</p>
+                    <p className="text-sm mt-2">คลิกปุ่มด้านล่างเพื่อเริ่มต้น</p>
                   </div>
                 )}
               </div>
@@ -119,7 +119,7 @@ const RestoreImage: React.FC = () => {
              <div className="w-full">
                 {!processedImage ? (
                     <button
-                        onClick={handleRestoreAndColorize}
+                        onClick={handleColorize}
                         disabled={isLoading}
                         className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-90 text-white font-bold py-3 px-4 rounded-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -130,8 +130,8 @@ const RestoreImage: React.FC = () => {
                             </>
                         ) : (
                             <>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                            ซ่อมแซมและเติมสี
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
+                            ลงสี
                             </>
                         )}
                     </button>
@@ -141,7 +141,7 @@ const RestoreImage: React.FC = () => {
                         className="w-full flex items-center justify-center gap-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-md transition duration-300"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h5M20 20v-5h-5" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4l16 16" /></svg>
-                        เริ่มต้นใหม่กับภาพอื่น
+                        เริ่มต้นใหม่ด้วยภาพอื่น
                     </button>
                 )}
               </div>

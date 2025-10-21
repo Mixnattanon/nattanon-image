@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { editImage } from '../services/geminiService';
 import { fileToBase64, fileToDataUrl } from '../utils/fileUtils';
@@ -6,9 +5,8 @@ import Spinner from './Spinner';
 import ImageUploader from './ImageUploader';
 
 const EditImage: React.FC = () => {
-  const [prompt, setPrompt] = useState('');
   const [originalImage, setOriginalImage] = useState<{ file: File; dataUrl: string } | null>(null);
-  const [editedImage, setEditedImage] = useState<string | null>(null);
+  const [repairedImage, setRepairedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +15,7 @@ const EditImage: React.FC = () => {
       try {
         const dataUrl = await fileToDataUrl(file);
         setOriginalImage({ file, dataUrl });
-        setEditedImage(null);
+        setRepairedImage(null);
         setError(null);
       } catch (err) {
         setError("ไม่สามารถอ่านไฟล์ที่เลือกได้");
@@ -26,36 +24,34 @@ const EditImage: React.FC = () => {
     }
   };
 
-  const handleEdit = useCallback(async () => {
+  const handleRepair = useCallback(async () => {
     if (!originalImage) {
       setError('กรุณาอัปโหลดรูปภาพก่อน');
-      return;
-    }
-    if (!prompt) {
-      setError('กรุณาป้อนคำสั่งแก้ไข');
       return;
     }
 
     setIsLoading(true);
     setError(null);
-    setEditedImage(null);
+    setRepairedImage(null);
     
+    const repairPrompt = "ฟื้นฟูภาพถ่ายนี้อย่างมืออาชีพ ลบตำหนิทั้งหมดอย่างพิถีพิถัน เช่น รอยขีดข่วน, ฝุ่น, ความเสียหายจากน้ำ, และแสงสะท้อนหรือเงาที่ไม่เป็นธรรมชาติ เพิ่มคุณภาพของภาพให้มีความคมชัดสูง (high definition) เพิ่มความคมชัดและความกระจ่างใสให้เทียบเท่าคุณภาพสตูดิโอมืออาชีพในปัจจุบัน สิ่งสำคัญคือต้องรักษารายละเอียด, องค์ประกอบ, และโดยเฉพาะอย่างยิ่งความคล้ายคลึงของบุคคลในภาพถ่ายไว้ 100% ห้ามเปลี่ยนแปลงลักษณะใบหน้าหรือองค์ประกอบของภาพถ่าย ภาพอาจเป็นภาพสีหรือขาวดำก็ได้ ให้รักษาสีเดิมของภาพไว้";
+
     try {
       const base64Data = await fileToBase64(originalImage.file);
-      const imageUrl = await editImage(base64Data, originalImage.file.type, prompt);
-      setEditedImage(imageUrl);
+      const imageUrl = await editImage(base64Data, originalImage.file.type, repairPrompt);
+      setRepairedImage(imageUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดที่ไม่รู้จัก');
     } finally {
       setIsLoading(false);
     }
-  }, [prompt, originalImage]);
+  }, [originalImage]);
 
   const handleDownload = () => {
-    if (!editedImage) return;
+    if (!repairedImage) return;
     const link = document.createElement('a');
-    link.href = editedImage;
-    link.download = 'gemini-edited-image.png';
+    link.href = repairedImage;
+    link.download = 'ภาพที่ซ่อมแซม-gemini.png';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -66,37 +62,22 @@ const EditImage: React.FC = () => {
       <ImageUploader onFileChange={handleFileChange} />
 
       {originalImage && (
-        <>
-          <div>
-            <label htmlFor="edit-prompt" className="block text-sm font-medium text-text-secondary mb-2">
-              คำสั่งแก้ไข
-            </label>
-            <div className="flex flex-col sm:flex-row gap-4">
-            <textarea
-              id="edit-prompt"
-              rows={2}
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              className="w-full bg-base-300 border border-gray-600 rounded-md p-3 text-text-primary focus:ring-2 focus:ring-brand-primary focus:outline-none transition"
-              placeholder="เช่น เพิ่มฟิลเตอร์เรโทร, หรือลบคนในพื้นหลัง"
-            />
+        <div className="w-full mt-4">
             <button
-                onClick={handleEdit}
+                onClick={handleRepair}
                 disabled={isLoading}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-90 text-white font-bold py-3 px-6 rounded-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-90 text-white font-bold py-3 px-6 rounded-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
                 {isLoading ? (
                 <>
                     <Spinner />
-                    กำลังแก้ไข...
+                    กำลังซ่อมแซม...
                 </>
                 ) : (
-                'ใช้การแก้ไข'
+                'ซ่อมแซมภาพ'
                 )}
             </button>
-            </div>
-          </div>
-        </>
+        </div>
       )}
 
       {error && <div className="text-red-400 bg-red-900/50 border border-red-600 p-3 rounded-md">{error}</div>}
@@ -109,16 +90,16 @@ const EditImage: React.FC = () => {
           </div>
         )}
         
-        {isLoading && !editedImage && (
+        {isLoading && !repairedImage && (
             <div className="w-full aspect-square bg-base-300 rounded-lg flex items-center justify-center animate-pulse-fast">
-                <div className="text-text-secondary">AI กำลังร่ายมนตร์...</div>
+                <div className="text-text-secondary">AI กำลังทำงาน...</div>
             </div>
         )}
 
-        {editedImage && (
+        {repairedImage && (
           <div>
             <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-semibold text-text-secondary">แก้ไขแล้ว</h3>
+                <h3 className="text-lg font-semibold text-text-secondary">ซ่อมแซมแล้ว</h3>
                 <button
                     onClick={handleDownload}
                     className="flex items-center gap-2 bg-base-300 hover:bg-brand-secondary/20 border border-gray-600 text-text-primary font-semibold py-2 px-4 rounded-md transition duration-300"
@@ -127,7 +108,7 @@ const EditImage: React.FC = () => {
                     ดาวน์โหลด
                 </button>
             </div>
-            <img src={editedImage} alt="Edited" className="rounded-lg shadow-lg w-full" />
+            <img src={repairedImage} alt="Repaired" className="rounded-lg shadow-lg w-full" />
           </div>
         )}
       </div>

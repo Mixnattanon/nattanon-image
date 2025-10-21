@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { generateImage } from '../services/geminiService';
 import { ASPECT_RATIOS } from '../constants';
@@ -34,7 +33,7 @@ const GenerateImage: React.FC = () => {
     if (!generatedImage) return;
     const link = document.createElement('a');
     link.href = generatedImage;
-    link.download = 'gemini-generated-image.png';
+    link.download = 'ภาพที่สร้างโดย-gemini.png';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -44,7 +43,7 @@ const GenerateImage: React.FC = () => {
     <div className="flex flex-col gap-6">
       <div>
         <label htmlFor="prompt" className="block text-sm font-medium text-text-secondary mb-2">
-          คำสั่งสร้างภาพ
+          คำสั่ง
         </label>
         <textarea
           id="prompt"
@@ -52,14 +51,14 @@ const GenerateImage: React.FC = () => {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           className="w-full bg-base-300 border border-gray-600 rounded-md p-3 text-text-primary focus:ring-2 focus:ring-brand-primary focus:outline-none transition"
-          placeholder="เช่น ภาพถ่ายสิงโตสง่างามสวมมงกุฎในป่าทึบ"
+          placeholder="เช่น ภาพถ่ายพระพุทธรูปพื้นหลังสีฟ้า หรือเสื้อยืดสีขาวลายต้นไม้"
         />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-center">
         <div className="w-full sm:w-1/2">
           <label htmlFor="aspectRatio" className="block text-sm font-medium text-text-secondary mb-2">
-            สัดส่วนภาพ
+            อัตราส่วนภาพ
           </label>
           <select
             id="aspectRatio"

@@ -1,4 +1,3 @@
-
 export enum AspectRatio {
   SQUARE = '1:1',
   PORTRAIT_3_4 = '3:4',
@@ -7,4 +6,4 @@ export enum AspectRatio {
   LANDSCAPE_16_9 = '16:9',
 }
 
-export type Tab = 'generate' | 'edit' | 'restore';
+export type Tab = 'generate' | 'repair' | 'colorize' | 'memorial';

@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef } from 'react';
 
 interface ImageUploaderProps {
