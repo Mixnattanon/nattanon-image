@@ -1,0 +1,5 @@
+{
+  "name": "Gemini Image Studio",
+  "description": "An all-in-one image workshop powered by Gemini. Generate new images from text, edit existing photos with prompts, and restore or colorize old pictures with advanced AI.",
+  "requestFramePermissions": []
+}
